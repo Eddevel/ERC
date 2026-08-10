@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "Eko runners Club | ERC – Lagos Run Club",
   description:
     "Join Eko runners Club (ERC) – the most vibrant run community in Lagos. Train, race, and connect with fellow runners.",
-  keywords: ["run club", "Lagos", "Eko runners Club", "ERC", "running", "5K", "10K"],
+  keywords: ["run club", "Lagos", "Eko runners Club", "ERC", "running", "5K", "10K,  21K, 42K", "marathon", "half marathon", "training", "community"],
 };
 
 export default function RootLayout({
