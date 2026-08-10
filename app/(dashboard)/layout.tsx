@@ -1,20 +1,28 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Navbar } from "@/components/shared/Navbar";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import Link from "next/link";
-import { LayoutDashboard, Calendar, User, Shield, CameraIcon, Ticket } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  User,
+  Shield,
+  ScanLine,
+  Ticket,
+} from "lucide-react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -24,7 +32,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
         <LoadingSpinner />
       </div>
     );
@@ -32,69 +40,103 @@ export default function DashboardLayout({
 
   if (!user) return null;
 
+  const links = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/tickets", label: "My Tickets", icon: Ticket },
+    { href: "/my-runs", label: "My Runs", icon: Calendar },
+    { href: "/profile", label: "Profile", icon: User },
+  ];
+
+  const adminLinks = [
+    { href: "/admin/events", label: "Manage Events", icon: Shield },
+    { href: "/admin/scan", label: "Scan Tickets", icon: ScanLine },
+  ];
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+
+  const itemClass = (href: string) =>
+    `flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition whitespace-nowrap ${
+      isActive(href)
+        ? "bg-orange-500 text-white shadow-sm"
+        : "text-muted-foreground hover:bg-orange-500/10 hover:text-orange-600"
+    }`;
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
-        {/* Sidebar */}
-        <aside className="w-full md:w-64 shrink-0">
-          <nav className="space-y-1 sticky top-24">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </Link>
-         
-  
-            
-            <Link
-              href="/profile"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <User className="h-4 w-4" />
-              Profile
-            </Link>
-            <Link
-              href="/tickets"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <Ticket className="h-4 w-4" />
-              My Tickets
-            </Link>
-            <Link
-              href="/my-runs"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <Calendar className="h-4 w-4" />
-              My Runs
-            </Link>
-            {isAdmin && (
-             <Link
-              href="/admin/events"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <Shield className="h-4 w-4" />
-              Manage Event
-            </Link>
-)}
-            {isAdmin && (
 
-             <Link
-              href="/admin/scan"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-brand-500/10 hover:text-brand-600 transition"
-            >
-              <CameraIcon className="h-4 w-4" />
-              Scan Ticket
-            </Link>
-)}
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        {/* Welcome strip */}
+        <div className="mb-4 sm:mb-6">
+          <p className="text-sm text-muted-foreground">Welcome back</p>
+          <h1 className="text-lg sm:text-xl font-semibold truncate">
+            {profile?.name || user.displayName || "Runner"}
+            {isAdmin && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-600">
+                Admin
+              </span>
+            )}
+          </h1>
+        </div>
 
-           
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {/* Mobile: horizontal scroll nav */}
+          <nav className="lg:hidden -mx-4 px-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+              {links.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href} className={itemClass(href)}>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </Link>
+              ))}
+              {isAdmin &&
+                adminLinks.map(({ href, label, icon: Icon }) => (
+                  <Link key={href} href={href} className={itemClass(href)}>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+            </div>
           </nav>
-        </aside>
 
-        <main className="flex-1">{children}</main>
+          {/* Desktop sidebar */}
+          <aside className="hidden lg:block w-56 shrink-0">
+            <nav className="sticky top-24 space-y-1 rounded-2xl border bg-card p-3 shadow-sm">
+              <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Menu
+              </p>
+              {links.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href} className={itemClass(href)}>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </Link>
+              ))}
+
+              {isAdmin && (
+                <>
+                  <div className="my-2 border-t border-border/60" />
+                  <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Admin
+                  </p>
+                  {adminLinks.map(({ href, label, icon: Icon }) => (
+                    <Link key={href} href={href} className={itemClass(href)}>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {label}
+                    </Link>
+                  ))}
+                </>
+              )}
+            </nav>
+          </aside>
+
+          {/* Main content */}
+          <main className="flex-1 min-w-0">
+            <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
