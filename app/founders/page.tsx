@@ -107,7 +107,7 @@ export default function FoundersPage() {
               Meet the <span className="text-orange-500">Founders</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
-             Inspired by the global running movement and driven by a shared passion for community,connection, and wellness, Oghenetega Akintola (right) and Olachukwu Offor (left) set out to create a space where Lagos runners could come together. As the only female co-founders of a running club in Nigeria, they wanted to redefine what running culture looks like — building a club that is inclusive, empowering, and rooted in consistency, connection, and collective growth.
+             Inspired by the global running movement and driven by a shared passion for community,connection, and wellness, Oghenetega Akintola (right) and Olachukwu Offor (left) set out to create a space where Lagos runners could come together. As the only female co-founders of a running club in Nigeria, they wanted to redefine what running culture looks like building a club that is inclusive, empowering, and rooted in consistency, connection, and collective growth.
             </p>
           </div>
 
@@ -131,7 +131,7 @@ export default function FoundersPage() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto ">
+            <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto ">
               {captains.map((c) => (
                 <PersonCard  key={c.name + c.branch} {...c} />
               ))}

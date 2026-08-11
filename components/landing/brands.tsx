@@ -40,7 +40,7 @@ export function Brands() {
             {row.map((brand, i) => (
               <div
                 key={`${brand.name}-${i}`}
-                className="relative flex items-center justify-center h-14 w-32 md:h-16 md:w-40 shrink-0 transition duration-300"
+                className="relative flex items-center justify-center h-19 w-auto transition duration-300"
                 title={brand.name}
               >
                 <Image

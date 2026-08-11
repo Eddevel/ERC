@@ -137,7 +137,7 @@ export function Hero() {
             className="mt-6 text-lg md:text-xl text-white/85 max-w-xl"
           >
             Join the most vibrant running community in Lagos. Train together,
-            race together, grow together. From 5K beginners to marathoners —
+            race together, grow together. From 5K beginners to marathoners
             there&apos;s a place for every runner at Ẹ̀RC.
           </p>
 
