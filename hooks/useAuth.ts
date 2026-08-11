@@ -39,19 +39,24 @@ export function useAuth() {
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
         if (snap.exists()) {
           const data = snap.data();
-          setProfile({
-            ...basic,
-            name: data.name || basic.name,
-            email: data.email || basic.email,
-            phone: data.phone || "",
-            pace: data.pace || "",
-            preferredDistance: data.preferredDistance || "",
-            emergencyContact: data.emergencyContact || "",
-            homeLandmark: data.homeLandmark || "",
-            branch: data.branch || "",
-            isMember: data.isMember ?? true,
-            role: data.role === "admin" ? "admin" : "member",
-          });
+         setProfile({
+  ...basic,
+  name: data.name || basic.name,
+  email: data.email || basic.email,
+  phone: data.phone || "",
+  pace: data.pace || "",
+  preferredDistance: data.preferredDistance || "",
+  emergencyContact: data.emergencyContact || "",
+  homeLandmark: data.homeLandmark || "",
+  branch: data.branch || "",
+  isMember: data.isMember ?? true,
+  role:
+    data.role === "admin"
+      ? "admin"
+      : data.role === "agent"
+        ? "agent"
+        : "member",
+});
         } else {
           setProfile(basic);
         }
@@ -68,9 +73,13 @@ export function useAuth() {
 
 
   return {
-    user,
-    profile,
-    loading,
-    isAdmin: profile?.role === "admin",
-  };
+  user,
+  profile,
+  loading,
+  isAdmin: profile?.role === "admin",
+  isAgent: profile?.role === "agent",
+  // scan allowed for admin OR agent
+  canScan: profile?.role === "admin" || profile?.role === "agent",
+  canManageEvents: profile?.role === "admin",
+};
 }

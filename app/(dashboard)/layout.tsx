@@ -10,9 +10,10 @@ import {
   LayoutDashboard,
   Calendar,
   User,
-  Shield,
   ScanLine,
   Ticket,
+  Settings,
+  PieChart,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -20,7 +21,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { isAdmin, canScan, canManageEvents, profile, user, loading } =
+    useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,10 +49,18 @@ export default function DashboardLayout({
     { href: "/profile", label: "Profile", icon: User },
   ];
 
+  // Admin only
   const adminLinks = [
-    { href: "/admin/events", label: "Manage Events", icon: Shield },
-    { href: "/admin/scan", label: "Scan Tickets", icon: ScanLine },
+    { href: "/admin/events", label: "Manage Events", icon: Settings },
+    { href: "/admin/stats", label: "Stats", icon: PieChart },
   ];
+
+  // Admin + Agent
+  const scanLink = {
+    href: "/admin/scan",
+    label: "Scan Tickets",
+    icon: ScanLine,
+  };
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
@@ -62,26 +72,32 @@ export default function DashboardLayout({
         : "text-muted-foreground hover:bg-orange-500/10 hover:text-orange-600"
     }`;
 
+  const role = profile?.role;
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Navbar />
 
       <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
-        {/* Welcome strip */}
         <div className="mb-4 sm:mb-6">
           <p className="text-sm text-muted-foreground">Welcome back</p>
           <h1 className="text-lg sm:text-xl font-semibold truncate">
             {profile?.name || user.displayName || "Runner"}
-            {isAdmin && (
+            {role === "admin" && (
               <span className="ml-2 inline-flex items-center rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-600">
                 Admin
+              </span>
+            )}
+            {role === "agent" && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-600">
+                Agent
               </span>
             )}
           </h1>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
-          {/* Mobile: horizontal scroll nav */}
+          {/* Mobile nav */}
           <nav className="lg:hidden -mx-4 px-4">
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
               {links.map(({ href, label, icon: Icon }) => (
@@ -90,6 +106,17 @@ export default function DashboardLayout({
                   {label}
                 </Link>
               ))}
+
+              {canScan && (
+                <Link
+                  href={scanLink.href}
+                  className={itemClass(scanLink.href)}
+                >
+                  <scanLink.icon className="h-4 w-4 shrink-0" />
+                  {scanLink.label}
+                </Link>
+              )}
+
               {isAdmin &&
                 adminLinks.map(({ href, label, icon: Icon }) => (
                   <Link key={href} href={href} className={itemClass(href)}>
@@ -113,24 +140,34 @@ export default function DashboardLayout({
                 </Link>
               ))}
 
-              {isAdmin && (
+              {/* Agent + Admin: scan only section */}
+              {canScan && (
                 <>
                   <div className="my-2 border-t border-border/60" />
                   <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Admin
+                    {isAdmin ? "Admin" : "Agent"}
                   </p>
-                  {adminLinks.map(({ href, label, icon: Icon }) => (
-                    <Link key={href} href={href} className={itemClass(href)}>
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {label}
-                    </Link>
-                  ))}
+                  <Link
+                    href={scanLink.href}
+                    className={itemClass(scanLink.href)}
+                  >
+                    <scanLink.icon className="h-4 w-4 shrink-0" />
+                    {scanLink.label}
+                  </Link>
                 </>
               )}
+
+              {/* Admin only: events + stats */}
+              {isAdmin &&
+                adminLinks.map(({ href, label, icon: Icon }) => (
+                  <Link key={href} href={href} className={itemClass(href)}>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
             </nav>
           </aside>
 
-          {/* Main content */}
           <main className="flex-1 min-w-0">
             <div className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm">
               {children}

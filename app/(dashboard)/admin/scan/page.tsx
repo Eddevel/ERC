@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 type ScanStatus = "idle" | "scanning" | "success" | "error";
 
 export default function AdminScanPage() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, canScan, loading: authLoading } = useAuth();
   const router = useRouter();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const handlingRef = useRef(false);
@@ -32,11 +32,11 @@ export default function AdminScanPage() {
       router.replace("/login");
       return;
     }
-    if (!isAdmin) {
-      toast.error("Admin only");
+    if (!canScan) {
+      toast.error("Scan access required");
       router.replace("/dashboard");
     }
-  }, [authLoading, user, isAdmin, router]);
+  }, [authLoading, user, canScan, router]);
 
   const stopScanner = async () => {
     const scanner = scannerRef.current;
@@ -74,7 +74,6 @@ export default function AdminScanPage() {
 
       const ticket = snap.data();
 
-      // Already used
       if (ticket.status === "used") {
         setStatus("error");
         setMessage(
@@ -89,7 +88,6 @@ export default function AdminScanPage() {
         return;
       }
 
-      // Cancelled
       if (ticket.status === "cancelled") {
         setStatus("error");
         setMessage("This ticket was cancelled");
@@ -97,7 +95,6 @@ export default function AdminScanPage() {
         return;
       }
 
-      // Explicit expired status
       if (ticket.status === "expired") {
         setStatus("error");
         setMessage("This ticket has expired");
@@ -110,7 +107,6 @@ export default function AdminScanPage() {
         return;
       }
 
-      // Check expiry by expiresAt or event date/time
       let isExpired = false;
       let expiryReason = "";
 
@@ -128,7 +124,6 @@ export default function AdminScanPage() {
           if (eventSnap.exists()) {
             const event = eventSnap.data();
             const end = new Date(`${event.date}T${event.time || "23:59"}`);
-            // 6-hour grace after event start
             const graceMs = 6 * 60 * 60 * 1000;
             if (
               !Number.isNaN(end.getTime()) &&
@@ -171,7 +166,6 @@ export default function AdminScanPage() {
         return;
       }
 
-      // Valid — mark as scanned
       await updateDoc(ticketRef, {
         status: "used",
         usedAt: serverTimestamp(),
@@ -200,7 +194,7 @@ export default function AdminScanPage() {
   };
 
   const startScanner = async () => {
-    if (!isAdmin) return;
+    if (!canScan) return;
 
     await stopScanner();
     setMessage("");
@@ -245,10 +239,10 @@ export default function AdminScanPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (authLoading || !isAdmin) {
+  if (authLoading || !canScan) {
     return (
       <div className="py-16 text-center text-muted-foreground">
-        Checking admin access...
+        Checking access...
       </div>
     );
   }
