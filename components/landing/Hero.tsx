@@ -8,22 +8,27 @@ import { ArrowRight, MapPin } from "lucide-react";
 
 const SLIDES = [
   {
-    src: "/images/hero-2.jpg",
+    src: "/images/hero-4.jpeg",
     alt: "global running day",
   },
   {
-    src: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=1920&q=80",
+    src: "/images/hero-5.jpg",
     alt: "Runners on the road",
   },
   {
-    src: "/images/hero-1.jpg",
+    src: "/images/hero-6.jpg",
     alt: "wellness ladies",
   },
   {
-    src: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1920&q=80",
+    src: "/images/hero-7.jpg",
     alt: "Group running",
   },
-  {
+ 
+   {
+    src: "/images/hero-8.jpg",
+    alt: "ERC ",
+  },
+   {
     src: "/images/hero-3.jpg",
     alt: "ERC international women day",
   },

@@ -10,67 +10,37 @@ export const metadata = {
 
 const founders = [
   {
-    name: "Olachukwu Offor (middle)",
+    name: "Olachukwu Offor (right)",
     role: "Co-Founder",
     bio: "Is an event manager, creative producer and fitness enthusiast, and believer in the power of community and collective empowerment. As Co-founder of the successful Berlin-based collective ROOTS, and with expertise in event management, she brings strategic vision and creativity to Èkó Runners Club, helping it grow into a movement that goes beyond running.",
-    image:"/images/hero-2.jpg"  },
+    image:"/images/ola&tega.jpg"  },
      {
-    name: "Oghenetega Akintola (left)",
+    name: "Oghenetega Akintola (right)",
     role: "Co-Founder",
     bio: "Is a former Lagos State gymnast, psychologist, and creative producer- shaped by years of training, performance, and discipline. As a wellness advocate rooted in movement, she shapes the experience of Èkó Runners Club, combining programming, culture, and storytelling to build a community where movement and connection come first.",
 
-    image:"/images/hero-1.jpg"  },
+    image:"/images/hero-2.jpg"  },
 ];
 
 const captains = [
+  
   {
-    name: "Tunde Bakare",
-    branch: "Lekki",
+    name: "ERC Captains",
+    branch: "Ajah, Lekki, ikoyi.",
     role: "Run Captain",
-    bio: "Saturday long runs and coastal routes. Keeps the Lekki crew steady and smiling.",
+    bio: "Weekday evenings and weekend long runs around Ikoyi. Lekki and Ajah. Strong on community support.",
     image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+      "/images/captains.jpg",
   },
   {
-    name: "Funke Adeyemi",
-    branch: "Ajah",
+    name: "ERC Captains",
+    branch: "Yaba, Surulere, Unilag",
     role: "Run Captain",
-    bio: "Early birds and beginner-friendly paces. Building Ajah one easy run at a time.",
+    bio: "Tech-hub paces and recovery chats. Holds space for every level in Yaba, Surulere and Unilag.",
     image:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
+      "/images/captain2.jpg",
   },
-  {
-    name: "Ibrahim Yusuf",
-    branch: "UNILAG",
-    role: "Run Captain",
-    bio: "Campus loops and student energy. Coordinates UNILAG meetups and race prep.",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Ngozi Okafor",
-    branch: "Ikeja",
-    role: "Run Captain",
-    bio: "Weekday evenings and weekend long runs around Ikeja. Strong on community support.",
-    image:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Emeka Nwosu",
-    branch: "Yaba",
-    role: "Run Captain",
-    bio: "Tech-hub paces and recovery chats. Holds space for every level in Yaba.",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
-  },
-  {
-    name: "Aisha Bello",
-    branch: "Surulere",
-    role: "Run Captain",
-    bio: "Neighborhood routes and inclusive packs. Surulere’s go-to for midweek motivation.",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
-  },
+ 
 ];
 
 function PersonCard({
@@ -161,7 +131,7 @@ export default function FoundersPage() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto hidden">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto ">
               {captains.map((c) => (
                 <PersonCard  key={c.name + c.branch} {...c} />
               ))}
