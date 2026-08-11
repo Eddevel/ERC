@@ -72,7 +72,7 @@ export function Navbar() {
                 <Link href="/dashboard" className={linkClass("/dashboard")}>
                   Dashboard
                 </Link>
-                <Link href="/my-runs" className={linkClass("/my-runs")}>
+                <Link href="/tickets" className={linkClass("/tickets")}>
                   My Tickets
                 </Link>
                 <Button
@@ -150,7 +150,7 @@ export function Navbar() {
                     Dashboard
                   </Link>
                   <Link
-                    href="/my-runs"
+                    href="/tickets"
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2 py-3.5 border-b border-border/60 hover:text-orange-500"
                   >

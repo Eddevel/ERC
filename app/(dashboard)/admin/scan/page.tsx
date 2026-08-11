@@ -16,6 +16,7 @@ export default function AdminScanPage() {
   const router = useRouter();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const handlingRef = useRef(false);
+
   const [status, setStatus] = useState<ScanStatus>("idle");
   const [message, setMessage] = useState("");
   const [lastTicket, setLastTicket] = useState<{
@@ -46,7 +47,7 @@ export default function AdminScanPage() {
       }
       await scanner.clear();
     } catch {
-      // ignore
+      // ignore cleanup errors
     }
     scannerRef.current = null;
     setCameraOn(false);
@@ -61,8 +62,8 @@ export default function AdminScanPage() {
     setMessage("Checking ticket...");
 
     try {
-      const ref = doc(db, "tickets", ticketId);
-      const snap = await getDoc(ref);
+      const ticketRef = doc(db, "tickets", ticketId);
+      const snap = await getDoc(ticketRef);
 
       if (!snap.exists()) {
         setStatus("error");
@@ -73,6 +74,7 @@ export default function AdminScanPage() {
 
       const ticket = snap.data();
 
+      // Already used
       if (ticket.status === "used") {
         setStatus("error");
         setMessage(
@@ -87,15 +89,90 @@ export default function AdminScanPage() {
         return;
       }
 
+      // Cancelled
+      if (ticket.status === "cancelled") {
+        setStatus("error");
+        setMessage("This ticket was cancelled");
+        toast.error("Ticket cancelled");
+        return;
+      }
+
+      // Explicit expired status
+      if (ticket.status === "expired") {
+        setStatus("error");
+        setMessage("This ticket has expired");
+        toast.error("Ticket expired");
+        setLastTicket({
+          id: ticketId,
+          name: ticket.userName || "Runner",
+          event: ticket.eventTitle || "",
+        });
+        return;
+      }
+
+      // Check expiry by expiresAt or event date/time
+      let isExpired = false;
+      let expiryReason = "";
+
+      if (ticket.expiresAt) {
+        const exp = new Date(ticket.expiresAt);
+        if (!Number.isNaN(exp.getTime()) && exp.getTime() < Date.now()) {
+          isExpired = true;
+          expiryReason = "Ticket expiry time has passed";
+        }
+      }
+
+      if (!isExpired && ticket.eventId) {
+        try {
+          const eventSnap = await getDoc(doc(db, "events", ticket.eventId));
+          if (eventSnap.exists()) {
+            const event = eventSnap.data();
+            const end = new Date(`${event.date}T${event.time || "23:59"}`);
+            // 6-hour grace after event start
+            const graceMs = 6 * 60 * 60 * 1000;
+            if (
+              !Number.isNaN(end.getTime()) &&
+              Date.now() > end.getTime() + graceMs
+            ) {
+              isExpired = true;
+              expiryReason = `Event ended (${event.date} ${event.time || ""})`;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not load event for expiry check", e);
+        }
+      }
+
+      if (isExpired) {
+        try {
+          await updateDoc(ticketRef, {
+            status: "expired",
+            expiredAt: serverTimestamp(),
+          });
+        } catch {
+          // still block entry
+        }
+
+        setStatus("error");
+        setMessage(expiryReason || "This ticket has expired");
+        toast.error("Ticket expired");
+        setLastTicket({
+          id: ticketId,
+          name: ticket.userName || "Runner",
+          event: ticket.eventTitle || "",
+        });
+        return;
+      }
+
       if (ticket.status !== "valid") {
         setStatus("error");
-        setMessage(`Ticket status: ${ticket.status}`);
+        setMessage(`Ticket not valid (status: ${ticket.status})`);
         toast.error("Ticket not valid");
         return;
       }
 
-      // Mark as scanned / used
-      await updateDoc(ref, {
+      // Valid — mark as scanned
+      await updateDoc(ticketRef, {
         status: "used",
         usedAt: serverTimestamp(),
         scannedBy: user?.uid || null,
@@ -112,8 +189,8 @@ export default function AdminScanPage() {
     } catch (err: any) {
       console.error(err);
       setStatus("error");
-      setMessage(err?.message || "Scan failed (check permissions)");
-      toast.error("Could not update ticket");
+      setMessage(err?.message || "Scan failed");
+      toast.error("Could not process ticket");
     } finally {
       setTimeout(() => {
         handlingRef.current = false;
@@ -144,7 +221,7 @@ export default function AdminScanPage() {
           await processTicket(decodedText);
         },
         () => {
-          // ignore frame errors
+          // ignore per-frame scan misses
         }
       );
       setCameraOn(true);
@@ -181,7 +258,7 @@ export default function AdminScanPage() {
       <h1 className="text-2xl font-bold tracking-tight">Scan tickets</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-6">
         Point the camera at the runner&apos;s QR code. Valid tickets are marked
-        as scanned.
+        as scanned. Expired or used tickets are rejected.
       </p>
 
       <div className="flex gap-2 mb-4">
@@ -217,7 +294,9 @@ export default function AdminScanPage() {
           {message}
           {lastTicket && (
             <p className="mt-1 text-xs opacity-80 font-normal">
-              {lastTicket.event} · ID: {lastTicket.id.slice(0, 12)}…
+              {lastTicket.event}
+              {lastTicket.event ? " · " : ""}
+              ID: {lastTicket.id.slice(0, 12)}…
             </p>
           )}
         </div>
@@ -225,7 +304,8 @@ export default function AdminScanPage() {
 
       <p className="mt-4 text-xs text-muted-foreground">
         QR must contain the Firestore ticket document ID. After a successful
-        scan, status becomes <strong>used</strong>.
+        scan, status becomes <strong>used</strong>. Expired tickets are marked{" "}
+        <strong>expired</strong>.
       </p>
     </div>
   );

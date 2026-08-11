@@ -73,7 +73,7 @@ export default function MyTicketsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-2">My Tickets</h1>
+      <h1 className="text-3xl font-bold mb-2">Tickets</h1>
       <p className="text-muted-foreground mb-8">
         Your free and paid event tickets
       </p>

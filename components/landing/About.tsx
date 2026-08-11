@@ -18,7 +18,7 @@ const features = [
     icon: Zap,
     title: "All Levels Welcome",
     description:
-      "From first-timers to elite athletes — pace groups for everyone.",
+      "From first-timers to elite athletes  pace groups for everyone.",
   },
   {
     icon: Heart,
@@ -85,19 +85,49 @@ export function About() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-2xl mx-auto text-center mb-14 md:mb-16">
-          <span className="inline-block text-sm font-semibold tracking-wide uppercase text-orange-500 mb-3">
-            Why Ẹ̀RC
+          <span className="inline-block text-3xl md:text-4xl font-bold tracking-wide uppercase text-orange-500 mb-3">
+            Who We Are
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Why{" "}
-            <span className="text-orange-500">Ẹ̀ko Runner Club</span>?
+          <h2 className=" tracking-tight">
+            
           </h2>
           <p className="mt-4 text-muted-foreground text-base md:text-lg leading-relaxed">
-            Born in the heart of Lagos, Ẹ̀RC is more than a run club — it&apos;s
-            a community that shows up, mile after mile.
+            <span className="text-orange-500">Èko Runners Club</span> (ÈRC)  is more than a running club 
+                we’re friends, family, and a community built on
+                consistency.Founded in July 2024 in Lagos, ERC was born
+                from the belief that we achieve better together and the
+                desire to inspire a healthier, more balanced lifestyle in the
+                city. By uniting runners of all levels, ERC is redefining fitness
+                culture  creating a space where people can run, connect,
+                and thrive. 
           </p>
         </div>
 
+        <div className="max-w-3xl flex flex-row m-auto gap-10 text-center mb-14 md:mb-16">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-wide uppercase text-orange-500 mb-3"> 
+          Mission
+          </h2>
+          <p className="mt-4 text-muted-foreground text-base md:text-lg leading-relaxed"> To redefine running and wellness culture in Lagos and beyond, creating a connected, inclusivecommunity where everyone can move, grow, and belong.
+
+          </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-wide uppercase text-orange-500 mb-3"> 
+            Vision
+          </h2>
+          <p className="mt-4 text-muted-foreground text-base md:text-lg leading-relaxed"> 
+            Our mission is to build Nigeria’s leading running community inclusive, empowering, and connected growing across Lagos and beyond while earning global recognition within the running world.             
+          </p>
+          </div>
+        </div>
+          
+
+
+
+
+          
         <div
           ref={cardsRef}
           className="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4"

@@ -40,7 +40,7 @@ export function Footer() {
                 <MapPin className="h-4 w-4" /> Lagos, Nigeria
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4" /> hello@ekorunnersclub.com
+                <Mail className="h-4 w-4" /> ekorunnersclub@gmail.com
               </li>
             </ul>
           </div>

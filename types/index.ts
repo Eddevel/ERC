@@ -48,10 +48,12 @@ export interface Ticket {
   userName: string;
   userEmail: string;
   amountPaid: number;
-  quantity?: number; // seats in this purchase
-  status: "valid" | "used" | "cancelled";
+  quantity?: number;
+  status: "valid" | "used" | "cancelled" | "expired";
   paymentRef: string;
   paidAt: string;
   usedAt?: string | null;
+  expiresAt?: string | null;
   eventTitle?: string;
+  scannedBy?: string | null;
 }

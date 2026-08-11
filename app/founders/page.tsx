@@ -10,10 +10,16 @@ export const metadata = {
 
 const founders = [
   {
-    name: "Olachukwu and Oghenetega",
+    name: "Olachukwu Offor (middle)",
     role: "Co-Founder",
-    bio: "Started Ẹ̀RC to build a consistent, welcoming run culture across Lagos. Believes every runners has a place in the pack. Passionate about community fitness and safe group runs. Leads the vision for branches and member experience.",
+    bio: "Is an event manager, creative producer and fitness enthusiast, and believer in the power of community and collective empowerment. As Co-founder of the successful Berlin-based collective ROOTS, and with expertise in event management, she brings strategic vision and creativity to Èkó Runners Club, helping it grow into a movement that goes beyond running.",
     image:"/images/hero-2.jpg"  },
+     {
+    name: "Oghenetega Akintola (left)",
+    role: "Co-Founder",
+    bio: "Is a former Lagos State gymnast, psychologist, and creative producer- shaped by years of training, performance, and discipline. As a wellness advocate rooted in movement, she shapes the experience of Èkó Runners Club, combining programming, culture, and storytelling to build a community where movement and connection come first.",
+
+    image:"/images/hero-1.jpg"  },
 ];
 
 const captains = [
@@ -128,11 +134,10 @@ export default function FoundersPage() {
         <section className="py-16 container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold">
-              About the <span className="text-orange-500">Founders</span>
+              Meet the <span className="text-orange-500">Founders</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Ẹ̀RC began with a simple idea: Lagos deserves a run club that feels
-              like family — structured enough to grow, open enough for everyone.
+             Inspired by the global running movement and driven by a shared passion for community,connection, and wellness, Oghenetega Akintola (right) and Olachukwu Offor (left) set out to create a space where Lagos runners could come together. As the only female co-founders of a running club in Nigeria, they wanted to redefine what running culture looks like — building a club that is inclusive, empowering, and rooted in consistency, connection, and collective growth.
             </p>
           </div>
 

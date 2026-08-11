@@ -12,12 +12,12 @@ const values = [
   {
     icon: Users,
     title: "Community",
-    text: "We run together across Lagos — beginners to marathoners welcome.",
+    text: "We run together across Lagos beginners to marathoners welcome.",
   },
   {
     icon: MapPin,
     title: "Branches",
-    text: "Lekki, Ajah, UNILAG, Ikeja, Yaba, Surulere, VI, Ikorodu and more.",
+    text: "Lekki, Ajah, UNILAG, Ikeja, Yaba, Surulere, Ikoyi, Ikorodu and more.",
   },
   {
     icon: Heart,
@@ -38,12 +38,12 @@ export default function AboutPage() {
       <main className="min-h-screen">
         <section className="bg-gradient-to-br from-orange-50 to-white dark:from-neutral-950 dark:to-neutral-900 py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl text-center">
-            <p className="text-orange-500 font-medium text-sm mb-3">About ERC</p>
+            <p className="text-orange-500 font-medium text-sm mb-3">About Ẹ̀RC</p>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Ẹ̀ko Runners Club
             </h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Ẹ̀ko Runners Club (ERC) is a Lagos-based running community built on
+              Ẹ̀ko Runners Club (Ẹ̀RC) is a Lagos-based running community built on
               consistency, friendship, and the roads of our city. From early
               morning jogs to race day, we show up for each other.
             </p>
@@ -79,7 +79,7 @@ export default function AboutPage() {
                 href="/register"
                 className="inline-flex h-11 items-center rounded-lg bg-orange-500 hover:bg-orange-600 text-white px-6 font-medium"
               >
-                Join ERC
+                Join Ẹ̀RC
               </Link>
               <Link
                 href="/events"
