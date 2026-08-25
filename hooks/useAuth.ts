@@ -78,8 +78,8 @@ export function useAuth() {
   loading,
   isAdmin: profile?.role === "admin",
   isAgent: profile?.role === "agent",
-  // scan allowed for admin OR agent
   canScan: profile?.role === "admin" || profile?.role === "agent",
   canManageEvents: profile?.role === "admin",
+  canManageOrders: profile?.role === "admin" || profile?.role === "agent",
 };
 }

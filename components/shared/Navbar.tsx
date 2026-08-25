@@ -6,14 +6,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, X, LogOut, LayoutDashboard, Ticket } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Ticket, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useCart } from "@/hooks/useCart";
+
 
 const navLinks = [
   { href: "/about", label: "About" },
   { href: "/events", label: "Events" },
   { href: "/founders", label: "Founders" },
+  { href: "/shop", label: "Shop" },
 ];
+
 
 export function Navbar() {
   const { user } = useAuth();
@@ -21,6 +25,8 @@ export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const {count } = useCart();
+  
 
   useEffect(() => {
     setOpen(false);
@@ -72,9 +78,7 @@ export function Navbar() {
                 <Link href="/dashboard" className={linkClass("/dashboard")}>
                   Dashboard
                 </Link>
-                <Link href="/tickets" className={linkClass("/tickets")}>
-                  My Tickets
-                </Link>
+                
                 <Button
                   variant="ghost"
                   size="sm"
@@ -84,9 +88,18 @@ export function Navbar() {
                   <LogOut className="h-4 w-4 mr-1.5" />
                   Logout
                 </Button>
+                <Link href="/shop/cart"className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-orange-500/30 text-orange-600 hover:bg-orange-500/10 transition" aria-label={`Cart, ${count} items`}>
+                            <ShoppingBag className="h-5 w-5" />
+                              {count > 0 && (
+                               <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                                 {count > 99 ? "99+" : count}
+                               </span>
+                              )}
+                            </Link>
               </>
             ) : (
               <div className="flex items-center gap-2">
+                
                 <Link href="/login">
                   <Button variant="ghost" size="sm">
                     Login
@@ -100,18 +113,41 @@ export function Navbar() {
                     Join ERC
                   </Button>
                 </Link>
+                <Link href="/shop/cart"className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-orange-500/30 text-orange-600 hover:bg-orange-500/10 transition" aria-label={`Cart, ${count} items`}>
+            <ShoppingBag className="h-5 w-5" />
+              {count > 0 && (
+               <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                 {count > 99 ? "99+" : count}
+               </span>
+              )}
+            </Link>
+             
+
               </div>
             )}
           </nav>
-
+               <div className="flex flex-row md:hidden items-center justify-center gap-4">
+             <Link
+  href="/shop/cart"
+  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-orange-500/30 text-orange-600 hover:bg-orange-500/10 transition"
+  aria-label={`Cart, ${count} items`}
+>
+  <ShoppingBag className="h-5 w-5" />
+  {count > 0 && (
+    <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+      {count > 99 ? "99+" : count}
+    </span>
+  )}
+</Link>
           <button
             type="button"
-            className="relative z-50 md:hidden flex h-10 w-10 items-center justify-center rounded-full border bg-background"
+            className="relative z-50  flex h-10 w-10 items-center justify-center rounded-full border bg-background"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+               </div>
         </div>
 
         {/* Mobile menu */}
@@ -138,6 +174,7 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+             
 
               {user ? (
                 <>
@@ -149,14 +186,10 @@ export function Navbar() {
                     <LayoutDashboard className="h-4 w-4" />
                     Dashboard
                   </Link>
-                  <Link
-                    href="/tickets"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 py-3.5 border-b border-border/60 hover:text-orange-500"
-                  >
-                    <Ticket className="h-4 w-4" />
-                    My Tickets
-                  </Link>
+                  
+              
+                  
+                   
                   <button
                     type="button"
                     onClick={() => setLogoutOpen(true)}
@@ -178,6 +211,8 @@ export function Navbar() {
                       Join ERC
                     </Button>
                   </Link>
+
+                 
                 </div>
               )}
             </nav>

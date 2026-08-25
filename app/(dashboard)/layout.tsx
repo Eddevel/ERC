@@ -14,6 +14,8 @@ import {
   Ticket,
   Settings,
   PieChart,
+  Shirt,
+  StarCheck,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -21,7 +23,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAdmin, canScan, canManageEvents, profile, user, loading } =
+  const { isAdmin, canScan, canManageOrders, profile, user, loading } =
     useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -46,6 +48,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/tickets", label: "My Tickets", icon: Ticket },
     { href: "/my-runs", label: "My Runs", icon: Calendar },
+    { href: "/orders", label: "My Orders", icon: Shirt },
     { href: "/profile", label: "Profile", icon: User },
   ];
 
@@ -53,6 +56,7 @@ export default function DashboardLayout({
   const adminLinks = [
     { href: "/admin/events", label: "Manage Events", icon: Settings },
     { href: "/admin/stats", label: "Stats", icon: PieChart },
+    { href: "/admin/products", label: "Products", icon: Shirt },
   ];
 
   // Admin + Agent
@@ -60,6 +64,11 @@ export default function DashboardLayout({
     href: "/admin/scan",
     label: "Scan Tickets",
     icon: ScanLine,
+  };
+  const orderLink = {
+    href: "/admin/orders",
+    label: "Shop Orders",
+    icon: StarCheck,
   };
 
   const isActive = (href: string) =>
@@ -116,6 +125,13 @@ export default function DashboardLayout({
                   {scanLink.label}
                 </Link>
               )}
+              {canManageOrders && (
+                  <Link href={orderLink.href}
+                  className={itemClass(orderLink.href)}>
+                      <orderLink.icon className="h-4 w-4 shrink-0" />
+                  {orderLink.label}
+                  </Link>
+              )}
 
               {isAdmin &&
                 adminLinks.map(({ href, label, icon: Icon }) => (
@@ -123,7 +139,9 @@ export default function DashboardLayout({
                     <Icon className="h-4 w-4 shrink-0" />
                     {label}
                   </Link>
-                ))}
+                ))},
+
+                
             </div>
           </nav>
 
@@ -154,6 +172,14 @@ export default function DashboardLayout({
                     <scanLink.icon className="h-4 w-4 shrink-0" />
                     {scanLink.label}
                   </Link>
+
+                  {canManageOrders && (
+                  <Link href={orderLink.href}
+                  className={itemClass(orderLink.href)}>
+                      <orderLink.icon className="h-4 w-4 shrink-0" />
+                  {orderLink.label}
+                  </Link>
+              )}
                 </>
               )}
 

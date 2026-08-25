@@ -57,3 +57,67 @@ export interface Ticket {
   eventTitle?: string;
   scannedBy?: string | null;
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category?: string;
+  stock: number;
+  active: boolean;
+  createdAt?: string | { seconds: number };
+}
+
+export interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  items: CartItem[];
+  total: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address?: string;
+  userId?: string | null;
+  paymentRef?: string;
+  createdAt: string;
+}
+
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  items: OrderItem[];
+  total: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address?: string;
+  userId?: string | null;
+  status: OrderStatus;
+  paymentRef?: string;
+  createdAt: string;
+  updatedAt?: string;
+}

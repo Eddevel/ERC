@@ -4,8 +4,10 @@ import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: NextRequest) {
   try {
-    const { reference, eventId, userId, userName, userEmail } =
-      await req.json();
+    const body = await req.json();
+    const { reference, eventId, userId, userName, userEmail, quantity = 1 } =
+      body;
+
 
     if (!reference || !eventId || !userId) {
       return NextResponse.json(
@@ -14,39 +16,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Verify with Paystack
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret) {
+      return NextResponse.json(
+        { error: "Server misconfigured: PAYSTACK_SECRET_KEY" },
+        { status: 500 }
+      );
+    }
+
+    // 1) Verify with Paystack
     const verifyRes = await fetch(
-      `https://api.paystack.co/transaction/verify/${reference}`,
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
       {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        },
+        headers: { Authorization: `Bearer ${secret}` },
+        cache: "no-store",
       }
     );
     const verifyData = await verifyRes.json();
 
-    if (!verifyData.status || verifyData.data.status !== "success") {
+    if (!verifyData.status || verifyData.data?.status !== "success") {
       return NextResponse.json(
-        { error: "Payment not successful" },
+        { error: "Payment not successful", details: verifyData },
         { status: 400 }
       );
     }
 
-    const amountPaid = verifyData.data.amount / 100; // kobo → Naira
+    const amountPaid = (verifyData.data.amount || 0) / 100;
+    const qty = Math.min(Math.max(Number(quantity) || 1, 1), 5);
 
-    // 2. Load event
-    const eventRef = adminDb.collection("events").doc(eventId);
-    const eventSnap = await eventRef.get();
-    if (!eventSnap.exists) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-    const event = eventSnap.data()!;
-
-    if (event.bookedCount >= event.capacity) {
-      return NextResponse.json({ error: "Event is sold out" }, { status: 400 });
-    }
-
-    // 3. Prevent duplicate ticket for same payment
+    // 2) Prevent duplicate tickets for same payment
     const existing = await adminDb
       .collection("tickets")
       .where("paymentRef", "==", reference)
@@ -57,40 +55,57 @@ export async function POST(req: NextRequest) {
       const t = existing.docs[0];
       return NextResponse.json({
         ticketId: t.id,
+        ticketIds: [t.id],
         alreadyExists: true,
       });
     }
 
-    // 4. Create ticket + increment bookedCount
-    const ticketRef = adminDb.collection("tickets").doc();
-    const ticketId = ticketRef.id;
+    // 3) Load event
+    const eventRef = adminDb.collection("events").doc(eventId);
+    const eventSnap = await eventRef.get();
+    if (!eventSnap.exists) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+    const event = eventSnap.data()!;
 
+    // 4) Create ticket(s)
     const batch = adminDb.batch();
+    const ticketIds: string[] = [];
+    const perTicketAmount = amountPaid / qty;
 
-    batch.set(ticketRef, {
-      userId,
-      eventId,
-      userName: userName || "",
-      userEmail: userEmail || "",
-      amountPaid,
-      status: "valid",
-      paymentRef: reference,
-      paidAt: new Date().toISOString(),
-      usedAt: null,
-      eventTitle: event.title || "",
-    });
+    for (let i = 0; i < qty; i++) {
+      const ticketRef = adminDb.collection("tickets").doc();
+      ticketIds.push(ticketRef.id);
+      batch.set(ticketRef, {
+        userId,
+        eventId,
+        userName: userName || "",
+        userEmail: userEmail || "",
+        amountPaid: perTicketAmount,
+        quantity: 1,
+        status: "valid",
+        paymentRef: reference,
+        paidAt: new Date().toISOString(),
+        usedAt: null,
+        eventTitle: event.title || "",
+      });
+    }
 
     batch.update(eventRef, {
-      bookedCount: FieldValue.increment(1),
+      bookedCount: FieldValue.increment(qty),
     });
 
     await batch.commit();
 
-    return NextResponse.json({ ticketId, success: true });
+    return NextResponse.json({
+      success: true,
+      ticketId: ticketIds[0],
+      ticketIds,
+    });
   } catch (err: any) {
-    console.error("Paystack verify error:", err);
+    console.error("VERIFY ERROR", err);
     return NextResponse.json(
-      { error: err.message || "Verification failed" },
+      { error: err?.message || "Verification failed" },
       { status: 500 }
     );
   }
