@@ -49,7 +49,7 @@ export function Footer() {
         <div className="mt-10 pt-6 border-t text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} Ẹ̀ko runners Club (ERC). All rights reserved.
         </div>
-        <div className="mt-2 text-center text-sm text-muted-foreground">
+        <div className="mt-2 text-center text-sm text-muted-foreground hidden">
           Built with ❤️ by <span><Link href="https://eddea.org" >Eddea</Link></span>.
         </div>
       </div>
