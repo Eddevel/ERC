@@ -52,10 +52,11 @@ export interface Ticket {
   status: "valid" | "used" | "cancelled" | "expired";
   paymentRef: string;
   paidAt: string;
-  usedAt?: string | null;
   expiresAt?: string | null;
   eventTitle?: string;
   scannedBy?: string | null;
+scannedByName?: string | null;
+usedAt?: string | { seconds: number } | null;
 }
 
 export interface Product {
@@ -121,3 +122,5 @@ export interface Order {
   createdAt: string;
   updatedAt?: string;
 }
+
+
