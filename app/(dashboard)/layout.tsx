@@ -139,7 +139,7 @@ export default function DashboardLayout({
                     <Icon className="h-4 w-4 shrink-0" />
                     {label}
                   </Link>
-                ))},
+                ))}
 
                 
             </div>
