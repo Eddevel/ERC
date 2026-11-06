@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, updateProfile, type User } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { changePassword } from "@/lib/auth";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const CLUB_BRANCHES = [
   "Lekki",
@@ -29,93 +31,133 @@ export default function ProfilePage() {
   const [branch, setBranch] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
-useEffect(() => {
-  const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-    setUser(firebaseUser);
 
-    if (!firebaseUser) {
+  // Password change
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const isEmailUser = user?.providerData?.some(
+    (p) => p.providerId === "password"
+  );
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+
+      if (!firebaseUser) {
+        setLoadingProfile(false);
+        return;
+      }
+
+      setName(firebaseUser.displayName || "");
       setLoadingProfile(false);
+
+      getDoc(doc(db, "users", firebaseUser.uid))
+        .then((snap) => {
+          if (!snap.exists()) return;
+          const data = snap.data();
+          setName(data.name || firebaseUser.displayName || "");
+          setPhone(data.phone || "");
+          setPace(data.pace || "");
+          setPreferredDistance(data.preferredDistance || "");
+          setEmergencyContact(data.emergencyContact || "");
+          setHomeLandmark(data.homeLandmark || "");
+          setBranch(data.branch || "");
+        })
+        .catch(() => {
+          console.warn("Could not load Firestore profile");
+        });
+    });
+
+    return () => unsub();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("You must be logged in");
       return;
     }
 
-    setName(firebaseUser.displayName || "");
-    setLoadingProfile(false); // show form immediately
+    setLoading(true);
 
-    // Load extra fields in background
-    getDoc(doc(db, "users", firebaseUser.uid))
-      .then((snap) => {
-        if (!snap.exists()) return;
-        const data = snap.data();
-        setName(data.name || firebaseUser.displayName || "");
-        setPhone(data.phone || "");
-        setPace(data.pace || "");
-        setPreferredDistance(data.preferredDistance || "");
-        setEmergencyContact(data.emergencyContact || "");
-        setHomeLandmark(data.homeLandmark || "");
-        setBranch(data.branch || "");
-      })
-      .catch(() => {
-        console.warn("Could not load Firestore profile (offline)");
-      });
-  });
+    try {
+      if (name.trim()) {
+        await updateProfile(user, { displayName: name.trim() });
+      }
 
-  return () => unsub();
-}, []);
+      const payload = {
+        name: name.trim(),
+        phone: phone.trim(),
+        pace: pace.trim(),
+        preferredDistance: preferredDistance.trim(),
+        emergencyContact: emergencyContact.trim(),
+        homeLandmark: homeLandmark.trim(),
+        branch: branch.trim(),
+        email: user.email || "",
+      };
 
-  const handleSave = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!user) {
-    toast.error("You must be logged in");
-    return;
-  }
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
 
-  setLoading(true);
-
-  try {
-    // 1. Always save name to Firebase Auth (this works)
-    if (name.trim()) {
-      await updateProfile(user, { displayName: name.trim() });
-    }
-
-    // 2. Firestore in background — do NOT await
-    const payload = {
-      name: name.trim(),
-      phone: phone.trim(),
-      pace: pace.trim(),
-      preferredDistance: preferredDistance.trim(),
-      emergencyContact: emergencyContact.trim(),
-      homeLandmark: homeLandmark.trim(),
-      branch: branch.trim(),
-      email: user.email || "",
-    };
-
-    const userRef = doc(db, "users", user.uid);
-
-    // Fire and forget — never blocks the UI
-    getDoc(userRef)
-      .then((snap) => {
-        if (snap.exists()) {
-          return updateDoc(userRef, payload);
-        }
-        return setDoc(userRef, {
+      if (snap.exists()) {
+        await updateDoc(userRef, payload);
+      } else {
+        await setDoc(userRef, {
           ...payload,
           isMember: true,
           role: "member",
         });
-      })
-      .catch((err) => {
-        console.warn("Firestore save skipped (offline):", err);
-      });
+      }
 
-    // 3. Always show success and stop loading
-    toast.success("Profile saved successfully!");
-  } catch (err: any) {
-    console.error(err);
-    toast.error(err?.message || "Failed to save profile");
-  } finally {
-    setLoading(false);
-  }
-};
+      toast.success("Profile saved successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Failed to save profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setPwLoading(true);
+    try {
+      await changePassword(user, currentPassword, newPassword);
+      toast.success("Password updated");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      const code = err?.code || "";
+      if (
+        code.includes("wrong-password") ||
+        code.includes("invalid-credential")
+      ) {
+        toast.error("Current password is incorrect");
+      } else {
+        toast.error(err.message || "Could not update password");
+      }
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const inputClass =
+    "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500";
 
   if (loadingProfile) {
     return (
@@ -150,6 +192,7 @@ useEffect(() => {
         </p>
       </div>
 
+      {/* Profile form */}
       <form onSubmit={handleSave} className="space-y-5">
         <div>
           <label className="block text-sm font-medium mb-1.5">Email</label>
@@ -169,22 +212,23 @@ useEffect(() => {
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="John Doe"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1.5">Phone number</label>
+          <label className="block text-sm font-medium mb-1.5">
+            Phone number
+          </label>
           <input
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+234 801 234 5678"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           />
         </div>
 
-        {/* Club branch */}
         <div>
           <label className="block text-sm font-medium mb-1.5">
             Club branch
@@ -193,7 +237,7 @@ useEffect(() => {
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
             required
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           >
             <option value="">Select your branch</option>
             {CLUB_BRANCHES.map((b) => (
@@ -204,7 +248,6 @@ useEffect(() => {
           </select>
         </div>
 
-        {/* Home landmark / bus stop */}
         <div>
           <label className="block text-sm font-medium mb-1.5">
             Home landmark / bus stop
@@ -214,7 +257,7 @@ useEffect(() => {
             value={homeLandmark}
             onChange={(e) => setHomeLandmark(e.target.value)}
             placeholder="e.g. Jakande gate, CMS, Under bridge"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           />
           <p className="text-xs text-muted-foreground mt-1">
             Nearest landmark or bus stop to where you live
@@ -230,7 +273,7 @@ useEffect(() => {
             value={pace}
             onChange={(e) => setPace(e.target.value)}
             placeholder="e.g. 5:30/km"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           />
         </div>
 
@@ -241,7 +284,7 @@ useEffect(() => {
           <select
             value={preferredDistance}
             onChange={(e) => setPreferredDistance(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           >
             <option value="">Select distance</option>
             <option value="5K">5K</option>
@@ -262,7 +305,7 @@ useEffect(() => {
             value={emergencyContact}
             onChange={(e) => setEmergencyContact(e.target.value)}
             placeholder="Name & phone"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500"
+            className={inputClass}
           />
         </div>
 
@@ -274,6 +317,57 @@ useEffect(() => {
           {loading ? "Saving..." : "Save Changes"}
         </button>
       </form>
+
+      {/* Separate form — not nested */}
+      {isEmailUser ? (
+        <form
+          onSubmit={handleChangePassword}
+          className="mt-10 space-y-4 border-t pt-8"
+        >
+          <h2 className="text-lg font-semibold">Change password</h2>
+          <input
+            type="password"
+            placeholder="Current password"
+            className={inputClass}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+          <input
+            type="password"
+            placeholder="New password (min 8 characters)"
+            className={inputClass}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="new-password"
+          />
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            className={inputClass}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="new-password"
+          />
+          <Button
+            type="submit"
+            disabled={pwLoading}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            {pwLoading ? "Updating..." : "Update password"}
+          </Button>
+        </form>
+      ) : (
+        <p className="mt-10 border-t pt-8 text-sm text-muted-foreground">
+          You signed in with Google. Manage your password in your Google
+          account.
+        </p>
+      )}
     </div>
   );
 }

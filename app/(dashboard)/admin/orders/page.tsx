@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
       return;
     }
     if (!canManageOrders) {
-      toast.error("Access reqired");
+      toast.error("Access required");
       router.replace("/dashboard");
     }
   }, [authLoading, user, canManageOrders, router]);

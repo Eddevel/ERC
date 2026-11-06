@@ -55,9 +55,10 @@ export default function DashboardLayout({
   // Admin only
   const adminLinks = [
     { href: "/admin/events", label: "Manage Events", icon: Settings },
-    { href: "/admin/stats", label: "Stats", icon: PieChart },
     { href: "/admin/products", label: "Products", icon: Shirt },
     { href: "/admin/agents", label: "Agents", icon: User },
+    { href: "/admin/stats", label: "Stats", icon: PieChart },
+
   ];
 
   // Admin + Agent
